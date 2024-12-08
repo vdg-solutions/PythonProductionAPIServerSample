@@ -1,0 +1,54 @@
+version: '3.8'
+
+services:
+  api:
+    build: .
+    ports:
+      - "8000:8000"
+    environment:
+      - APP_NAME=Production API
+      - DEBUG=False
+      - API_V1_PREFIX=/api/v1
+      - DATABASE_URL=postgresql://user:password@db:5432/mydb
+      - DB_MAX_CONNECTIONS=10
+      - DB_TIMEOUT=30
+      - SECRET_KEY=${SECRET_KEY:-change_this_secret_key}
+      - ACCESS_TOKEN_EXPIRE_MINUTES=30
+      - ALGORITHM=HS256
+      - LOG_LEVEL=INFO
+      - CORS_ORIGINS=["*"]  # Change in production
+    depends_on:
+      - db
+    networks:
+      - api_network
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:8000/api/v1/health"]
+      interval: 30s
+      timeout: 10s
+      retries: 3
+      start_period: 10s
+
+  db:
+    image: postgres:15-alpine
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=mydb
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    ports:
+      - "5432:5432"
+    networks:
+      - api_network
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d mydb"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+
+volumes:
+  postgres_data:
+
+networks:
+  api_network:
+    driver: bridge 
