@@ -84,4 +84,4 @@ class Settings(BaseSettings):
 settings = Settings()
 
 # Don't allow further modification of settings
-settings.__config__.frozen = True 
+# settings.__config__.frozen = True 
